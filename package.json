@@ -1,11 +1,11 @@
 {
   "name": "api-testing",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "API testing project",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "JWT_SECRET=test-secret vitest run",
+    "test:watch": "JWT_SECRET=test-secret vitest",
     "typecheck": "tsc --noEmit",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
@@ -16,6 +16,7 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
+    "@fastify/jwt": "^10.1.0",
     "fastify": "^5.8.5",
     "pino": "^10.3.1"
   },
