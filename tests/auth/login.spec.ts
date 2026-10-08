@@ -49,8 +49,13 @@ describe('POST /auth/login', () => {
       sub: 'user_1',
       email: 'admin@example.com',
       role: 'admin',
+      iat: expect.any(Number),
+      exp: expect.any(Number),
     })
     expect(decoded).not.toHaveProperty('password')
+
+    const { iat, exp } = decoded as { iat: number; exp: number }
+    expect(exp - iat).toBe(body.expiresIn)
   })
 
   it('returns 401 with wrong password', async () => {
@@ -176,5 +181,39 @@ describe('POST /auth/login', () => {
 
     expect(response.statusCode).toBe(400)
     expect(response.json()).toEqual(badRequestResponse)
+  })
+
+  it('returns 400 for malformed JSON without exposing parser details', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      headers: {
+        'content-type': 'application/json',
+      },
+      payload: '{"email":',
+    })
+
+    expect(response.statusCode).toBe(400)
+    expect(response.json()).toEqual({
+      error: 'Bad Request',
+      message: 'Invalid request',
+    })
+  })
+
+  it('preserves 415 for unsupported content type', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      headers: {
+        'content-type': 'application/xml',
+      },
+      payload: '<login />',
+    })
+
+    expect(response.statusCode).toBe(415)
+    expect(response.json()).toEqual({
+      error: 'Unsupported Media Type',
+      message: 'Invalid request',
+    })
   })
 })

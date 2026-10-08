@@ -28,28 +28,31 @@ export function registerUsersRoute(app: FastifyInstance) {
       return reply.code(401).send(unauthorizedResponse)
     }
 
-    const [scheme, token] = authorization.split(' ')
+    const parts = authorization.split(' ')
 
-    if (scheme !== authConfig.tokenType || !token) {
+    if (parts.length !== 2 || parts[0] !== authConfig.tokenType || !parts[1]) {
       return reply.code(401).send(unauthorizedResponse)
     }
 
+    const token = parts[1]
+    let decoded: unknown
+
     try {
-      const decoded = app.jwt.verify(token)
-
-      if (!hasSubject(decoded)) {
-        return reply.code(401).send(unauthorizedResponse)
-      }
-
-      const user = findUserById(decoded.sub)
-
-      if (!user) {
-        return reply.code(401).send(unauthorizedResponse)
-      }
-
-      return reply.code(200).send(toPublicUser(user))
+      decoded = app.jwt.verify(token)
     } catch {
       return reply.code(401).send(unauthorizedResponse)
     }
+
+    if (!hasSubject(decoded)) {
+      return reply.code(401).send(unauthorizedResponse)
+    }
+
+    const user = findUserById(decoded.sub)
+
+    if (!user) {
+      return reply.code(401).send(unauthorizedResponse)
+    }
+
+    return reply.code(200).send(toPublicUser(user))
   })
 }

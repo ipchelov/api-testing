@@ -48,7 +48,7 @@ npm run test:watch    # run tests in watch mode
 npm run typecheck     # run TypeScript checks
 npm run format:check  # check formatting
 npm run format        # format files
-npm run audit         # audit production dependencies
+npm run audit         # audit dependencies
 ```
 
 ## API
@@ -65,7 +65,9 @@ Returns API health status.
 
 ### POST /auth/login
 
-Authenticates a fake user and returns a JWT access token.
+Authenticates a fake user and returns a JWT access token. Send a JSON request body with
+`Content-Type: application/json`. Invalid credentials return `401`; invalid JSON or a body that
+fails validation returns `400`.
 
 Request example:
 
@@ -86,6 +88,8 @@ Successful response:
 }
 ```
 
+The token expires one hour after it is issued.
+
 ### GET /users/me
 
 Returns the current authenticated user.
@@ -95,6 +99,9 @@ Requires:
 ```http
 Authorization: Bearer <accessToken>
 ```
+
+The header must contain exactly one Bearer token. Missing, malformed, invalid, or expired tokens
+return `401`.
 
 Successful response:
 
@@ -140,9 +147,10 @@ Current automated checks cover:
 - health endpoint
 - login success and failure cases
 - request body validation
-- JWT access token response
+- invalid JSON responses
+- JWT access token response and expiration time
 - protected `/users/me` endpoint
-- missing or invalid Bearer token cases
+- missing, malformed, invalid, or expired Bearer token cases
 - full login and current user flow
 - fake user helper functions
 

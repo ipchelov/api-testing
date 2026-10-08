@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "audit": "npm audit --omit=dev"
+    "audit": "npm audit"
   },
   "keywords": [],
   "author": "",

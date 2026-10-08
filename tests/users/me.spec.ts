@@ -85,12 +85,57 @@ describe('GET /users/me', () => {
     expect(response.json()).toEqual(unauthorizedResponse)
   })
 
+  it('returns 401 when Authorization header has an extra part', async () => {
+    const accessToken = await loginAsAdmin(app)
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/users/me',
+      headers: {
+        authorization: `Bearer ${accessToken} extra`,
+      },
+    })
+
+    expect(response.statusCode).toBe(401)
+    expect(response.json()).toEqual(unauthorizedResponse)
+  })
+
+  it('returns 401 when Authorization header has extra spaces', async () => {
+    const accessToken = await loginAsAdmin(app)
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/users/me',
+      headers: {
+        authorization: `Bearer  ${accessToken}`,
+      },
+    })
+
+    expect(response.statusCode).toBe(401)
+    expect(response.json()).toEqual(unauthorizedResponse)
+  })
+
   it('returns 401 when token is invalid', async () => {
     const response = await app.inject({
       method: 'GET',
       url: '/users/me',
       headers: {
         authorization: 'Bearer invalid-token',
+      },
+    })
+
+    expect(response.statusCode).toBe(401)
+    expect(response.json()).toEqual(unauthorizedResponse)
+  })
+
+  it('returns 401 when token has expired', async () => {
+    const accessToken = app.jwt.sign({ exp: Math.floor(Date.now() / 1000) - 60 }, { sub: 'user_1' })
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/users/me',
+      headers: {
+        authorization: `Bearer ${accessToken}`,
       },
     })
 
