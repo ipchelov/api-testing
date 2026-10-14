@@ -2,7 +2,7 @@
 
 A TypeScript-based API project for practicing and demonstrating API testing approaches.
 
-Current release: `v0.2.0 - Auth Flow`
+Current release: `v0.3.0 - Role-Based Access Control`
 
 ## Tech Stack
 
@@ -114,6 +114,12 @@ Successful response:
 }
 ```
 
+### GET /admin/users
+
+Returns the public user list for an authenticated admin. Use the same Bearer header as `/users/me`.
+An admin receives `200` with an array of `{ id, email, name, role }` objects. A viewer receives
+`403`; missing or invalid authentication returns `401`.
+
 ## Test Users
 
 ```text
@@ -151,6 +157,8 @@ Current automated checks cover:
 - JWT access token response and expiration time
 - protected `/users/me` endpoint
 - missing, malformed, invalid, or expired Bearer token cases
+- admin-only user list and `401`/`403` authorization cases
+- rejection of JWT payload changes without a valid signature
 - full login and current user flow
 - fake user helper functions
 
@@ -180,11 +188,9 @@ Completed:
 - positive and negative auth tests
 - full login and current user flow
 
-## Next
-
 ### v0.3.0 - Role-Based Access Control
 
-Planned scope:
+Completed:
 
 - Admin-only `GET /admin/users`
 - Role-based authorization using JWT user role
@@ -192,3 +198,15 @@ Planned scope:
 - `403` for viewer access
 - `401` for missing or invalid auth
 - API tests for admin, viewer, and unauthenticated flows
+
+## Next
+
+### v0.4.0 - User Persistence
+
+Planned scope:
+
+- PostgreSQL users storage
+- SQL migrations
+- Repository layer replacing the fake users DB
+- Existing authentication and RBAC flows backed by PostgreSQL
+- Integration tests with a real database

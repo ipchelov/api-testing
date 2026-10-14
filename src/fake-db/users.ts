@@ -42,6 +42,10 @@ export function findUserById(id: string): User | undefined {
   return users.find((user) => user.id === id)
 }
 
+export function listPublicUsers(): PublicUser[] {
+  return users.map(toPublicUser)
+}
+
 export function toPublicUser(user: User): PublicUser {
   const { password, ...publicUser } = user
 

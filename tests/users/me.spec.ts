@@ -129,7 +129,10 @@ describe('GET /users/me', () => {
   })
 
   it('returns 401 when token has expired', async () => {
-    const accessToken = app.jwt.sign({ exp: Math.floor(Date.now() / 1000) - 60 }, { sub: 'user_1' })
+    const accessToken = app.jwt.sign(
+      { role: 'admin', exp: Math.floor(Date.now() / 1000) - 60 },
+      { sub: 'user_1' }
+    )
 
     const response = await app.inject({
       method: 'GET',
