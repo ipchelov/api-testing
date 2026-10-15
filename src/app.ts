@@ -2,6 +2,7 @@ import Fastify from 'fastify'
 import type { FastifyInstance } from 'fastify'
 import { registerErrorHandler } from './plugins/error-handler'
 import { registerJwtPlugin } from './plugins/jwt'
+import { registerAdminRoute } from './routes/admin'
 import { registerAuthRoute } from './routes/auth'
 import { registerUsersRoute } from './routes/users'
 import { loggerOptions } from './utils/logger'
@@ -28,6 +29,7 @@ export function buildApp(): FastifyInstance {
 
   registerAuthRoute(app)
   registerUsersRoute(app)
+  registerAdminRoute(app)
 
   return app
 }
