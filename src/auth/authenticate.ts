@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { authConfig } from '../config/auth.config'
-import { findUserById } from '../fake-db/users'
-import type { User, UserRole } from '../fake-db/users'
+import type { UsersRepository } from '../repositories/users.repository'
+import type { User, UserRole } from '../users/user'
 
 export const unauthorizedResponse = {
   error: 'Unauthorized',
@@ -34,10 +34,11 @@ function hasAuthClaims(payload: unknown): payload is AuthClaims {
   return payload.role === 'admin' || payload.role === 'viewer'
 }
 
-export function authenticateRequest(
+export async function authenticateRequest(
   app: FastifyInstance,
-  authorization: string | undefined
-): AuthenticationResult | null {
+  authorization: string | undefined,
+  usersRepository: UsersRepository
+): Promise<AuthenticationResult | null> {
   if (!authorization) {
     return null
   }
@@ -60,7 +61,7 @@ export function authenticateRequest(
     return null
   }
 
-  const user = findUserById(decoded.sub)
+  const user = await usersRepository.findById(decoded.sub)
 
   return user ? { user, tokenRole: decoded.role } : null
 }

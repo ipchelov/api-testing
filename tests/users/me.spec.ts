@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { buildApp } from '../../src/app'
+import { buildTestApp, useTestDatabase } from '../helpers/database'
 
 const unauthorizedResponse = {
   error: 'Unauthorized',
@@ -31,15 +31,16 @@ async function loginAsAdmin(app: FastifyInstance): Promise<string> {
 }
 
 describe('GET /users/me', () => {
+  useTestDatabase()
   let app: FastifyInstance
 
   beforeEach(async () => {
-    app = buildApp()
+    app = buildTestApp()
     await app.ready()
   })
 
   afterEach(async () => {
-    await app.close()
+    if (app) await app.close()
   })
 
   it('returns current user when Bearer token is valid', async () => {

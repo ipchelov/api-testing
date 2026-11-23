@@ -1,10 +1,14 @@
 import type { FastifyInstance } from 'fastify'
 import { authenticateRequest, unauthorizedResponse } from '../auth/authenticate'
-import { listPublicUsers } from '../fake-db/users'
+import type { UsersRepository } from '../repositories/users.repository'
 
-export function registerAdminRoute(app: FastifyInstance) {
-  app.get('/admin/users', (request, reply) => {
-    const authResult = authenticateRequest(app, request.headers.authorization)
+export function registerAdminRoute(app: FastifyInstance, usersRepository: UsersRepository) {
+  app.get('/admin/users', async (request, reply) => {
+    const authResult = await authenticateRequest(
+      app,
+      request.headers.authorization,
+      usersRepository
+    )
 
     if (authResult === null) {
       return reply.code(401).send(unauthorizedResponse)
@@ -17,6 +21,6 @@ export function registerAdminRoute(app: FastifyInstance) {
       })
     }
 
-    return reply.code(200).send(listPublicUsers())
+    return reply.code(200).send(await usersRepository.listPublicUsers())
   })
 }
