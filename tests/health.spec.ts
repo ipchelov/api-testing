@@ -1,16 +1,17 @@
 import type { FastifyInstance } from 'fastify'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { buildApp } from '../src/app'
+import { buildTestApp, useTestDatabase } from './helpers/database'
 
 describe('GET /health', () => {
+  useTestDatabase()
   let app: FastifyInstance
 
   beforeEach(() => {
-    app = buildApp()
+    app = buildTestApp()
   })
 
   afterEach(async () => {
-    await app.close()
+    if (app) await app.close()
   })
 
   it('returns 200 with API health status', async () => {

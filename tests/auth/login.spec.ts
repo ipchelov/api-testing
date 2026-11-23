@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { buildApp } from '../../src/app'
+import { buildTestApp, useTestDatabase } from '../helpers/database'
 
 const unauthorizedResponse = {
   error: 'Unauthorized',
@@ -13,15 +13,16 @@ const badRequestResponse = {
 }
 
 describe('POST /auth/login', () => {
+  useTestDatabase()
   let app: FastifyInstance
 
   beforeEach(async () => {
-    app = buildApp()
+    app = buildTestApp()
     await app.ready()
   })
 
   afterEach(async () => {
-    await app.close()
+    if (app) await app.close()
   })
 
   it('returns 200 with access token for valid credentials', async () => {
@@ -53,6 +54,7 @@ describe('POST /auth/login', () => {
       exp: expect.any(Number),
     })
     expect(decoded).not.toHaveProperty('password')
+    expect(decoded).not.toHaveProperty('passwordHash')
 
     const { iat, exp } = decoded as { iat: number; exp: number }
     expect(exp - iat).toBe(body.expiresIn)
