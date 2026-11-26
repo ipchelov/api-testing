@@ -7,7 +7,9 @@ import { registerErrorHandler } from './plugins/error-handler'
 import { registerJwtPlugin } from './plugins/jwt'
 import { registerAdminRoute } from './routes/admin'
 import { registerAuthRoute } from './routes/auth'
+import { registerProjectsRoutes } from './routes/projects'
 import { registerUsersRoute } from './routes/users'
+import { createProjectsRepository } from './repositories/projects.repository'
 import { createUsersRepository } from './repositories/users.repository'
 import { loggerOptions } from './utils/logger'
 
@@ -44,6 +46,7 @@ export function buildApp(options: { pool?: Pool } = {}): FastifyInstance {
   registerAuthRoute(app, usersRepository)
   registerUsersRoute(app, usersRepository)
   registerAdminRoute(app, usersRepository)
+  registerProjectsRoutes(app, createProjectsRepository(pool), usersRepository)
 
   return app
 }
