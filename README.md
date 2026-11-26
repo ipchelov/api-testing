@@ -2,7 +2,7 @@
 
 A TypeScript-based API project for practicing and demonstrating API testing approaches.
 
-Current release: `v0.4.0 - User Persistence`
+Current release: `v0.5.0 - Projects API`
 
 ## Tech Stack
 
@@ -155,6 +155,22 @@ Returns the public user list for an authenticated admin. Use the same Bearer hea
 An admin receives `200` with an array of `{ id, email, name, role }` objects. A viewer receives
 `403`; missing or invalid authentication returns `401`.
 
+### Projects
+
+Send `Authorization: Bearer <accessToken>` for every request. Both roles can read projects.
+Only `admin` can write. Projects contain `id`, `name`, `description`, and `creatorId`.
+See the [Projects API spec](specs/projects-api/spec.md) for validation and access rules.
+
+| Endpoint               | Success response                                                    |
+| ---------------------- | ------------------------------------------------------------------- |
+| `POST /projects`       | `201` with the new project. Send `name` and optional `description`. |
+| `GET /projects`        | `200` with a list ordered by ID.                                    |
+| `GET /projects/:id`    | `200` with the project.                                             |
+| `PATCH /projects/:id`  | `200` with the updated project. Send at least one editable field.   |
+| `DELETE /projects/:id` | `204` after permanent deletion.                                     |
+
+An existing development database needs `npm run db:migrate` before using these endpoints.
+
 ## Test Users
 
 ```text
@@ -183,6 +199,13 @@ curl -s http://localhost:3000/users/me \
   -H "Authorization: Bearer <accessToken>"
 ```
 
+## Development Workflow
+
+Starting with v0.5.0, new features follow a spec-anchored approach to spec-driven development (SDD).
+We agree on the expected behavior, scope, and acceptance criteria before implementation, then use
+the feature spec to guide the code, tests, and review. See the [Projects API spec](specs/projects-api/spec.md)
+for the first example.
+
 ## Testing Scope
 
 Current automated checks cover:
@@ -199,12 +222,13 @@ Current automated checks cover:
 - full login and current user flow
 - PostgreSQL repository lookups, SQL constraints, and repeatable migrations/seeds
 - password hashing, public user mapping, and database-target validation
+- projects CRUD, request validation, and role-based access
 
 API tests use Fastify `inject`, so they verify API behavior without starting a real HTTP server.
 
 DB tests use only the local `api_testing_test` database. They check the configured URL and the actual
-database name before writes, apply migrations, and reset `public.users` before and after each test.
-The reset deletes all users in that test table and restores known hashed fixtures before each case.
+database name before writes, apply migrations, and clear `public.projects` and then `public.users`
+before and after each test. The setup restores known hashed user fixtures before each case.
 Development `api_testing` is never a fallback. Do not run multiple DB test processes simultaneously
 against the same test database. Tests close their pools after completion; abrupt process termination
 is recovered by the next run's fixture reset.
@@ -263,13 +287,21 @@ Completed:
 - Integration tests with a real database
 - Salted scrypt password hashes and repeatable seed users
 
-## Next
-
 ### v0.5.0 - Projects API
 
-Planned scope:
+Completed:
 
 - Minimal Projects CRUD backed by PostgreSQL
 - Project creator and request validation
 - Admin management and viewer read access
 - API integration tests
+
+## Next
+
+### v0.6.0 - Tasks API
+
+Planned scope:
+
+- Tasks CRUD within projects
+- Task status, priority, creator, and assignee
+- PostgreSQL relationships and API integration tests

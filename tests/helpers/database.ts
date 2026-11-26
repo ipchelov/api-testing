@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest'
-import type { Pool } from 'pg'
+import type { Pool, PoolClient } from 'pg'
 import { buildApp } from '../../src/app'
 import { getDatabaseUrl } from '../../src/config/database.config'
 import { createDatabasePool, withDatabaseTransaction } from '../../src/db/database'
@@ -11,16 +11,15 @@ export function buildTestApp() {
   return buildApp({ pool: createDatabasePool(getDatabaseUrl('api_testing_test')) })
 }
 
+async function clearFixtures(client: PoolClient) {
+  await client.query('DELETE FROM public.projects')
+  await client.query('DELETE FROM public.users')
+}
+
 export function useTestDatabase() {
   let pool: Pool
   let users: User[]
   let ready = false
-
-  async function clearUsers() {
-    await withDatabaseTransaction(pool, 'api_testing_test', async (client) => {
-      await client.query('DELETE FROM public.users')
-    })
-  }
 
   beforeAll(async () => {
     pool = createDatabasePool(getDatabaseUrl('api_testing_test'))
@@ -32,13 +31,13 @@ export function useTestDatabase() {
 
   beforeEach(async () => {
     await withDatabaseTransaction(pool, 'api_testing_test', async (client) => {
-      await client.query('DELETE FROM public.users')
+      await clearFixtures(client)
       await insertSeedUsers(client, users)
     })
   })
 
   afterEach(async () => {
-    if (ready) await clearUsers()
+    if (ready) await withDatabaseTransaction(pool, 'api_testing_test', clearFixtures)
   })
   afterAll(async () => {
     if (pool) await pool.end()
